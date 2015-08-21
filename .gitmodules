@@ -1,0 +1,3 @@
+[submodule "src/ext/x64asm"]
+	path = src/ext/x64asm
+	url = https://github.com/StanfordPL/x64asm.git
