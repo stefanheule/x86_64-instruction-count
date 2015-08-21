@@ -56,8 +56,11 @@ x64asm:
 	./scripts/submodule-init.sh src/ext/x64asm
 	$(MAKE) -C src/ext/x64asm
 
-instr-count: src/instr-count.cc cpputil x64asm
-	$(GCC) $(OPT) $(INC) src/instr-count.cc -o instr-count $(LIB)
+src/mode.o: src/mode.cc
+	$(GCC) $(OPT) $(INC) -c $< -o $@
+
+instr-count: src/instr-count.cc src/mode.o cpputil x64asm
+	$(GCC) $(OPT) $(INC) src/instr-count.cc -o instr-count $(LIB) src/mode.o
 
 clean:
 	rm -f *.o
