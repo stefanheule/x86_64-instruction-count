@@ -23,6 +23,7 @@ auto& show_instructions = FlagArg::create("show_instructions")
   .description("Should the instructions be shown (rather than just showing the count)?");
 
 uint16_t type_size(Type t);
+string type_name(Type t);
 
 /** Count the number of x86_x64 instructions in different ways. */
 int main(int argc, char** argv) {
@@ -41,12 +42,11 @@ int main(int argc, char** argv) {
     } else if (mode == Mode::MNEMONIC_INTEL) {
       key = opcode_write_intel(opcode);
     } else if (mode == Mode::OPERAND_TYPE) {
-      ss << opcode;
-      key = ss.str();
-      // don't count the _1 variants
-      if (key.compare(key.length() - 2, 2, "_1") == 0 || key.compare(key.length() - 2, 2, "_2") == 0 || key.compare(key.length() - 2, 2, "_3") == 0) {
-        key = key.substr(key.length() - 2);
+      ss << opcode_write_intel(opcode);
+      for (size_t j = 0; j < instr.arity(); j++) {
+        ss << "_" << type_name(instr.type(j));
       }
+      key = ss.str();
     } else if (mode == Mode::OPERAND_WIDTH) {
       ss << opcode_write_intel(opcode);
       for (size_t j = 0; j < instr.arity(); j++) {
@@ -126,4 +126,130 @@ uint16_t type_size(Type t) {
   default:
     return 0;
   }
+}
+
+string type_name(Type t) {
+
+  switch(t) {
+  case Type::NONE:
+    return "none";
+  case Type::HINT:
+    return "hint";
+  case Type::IMM_8:
+    return "imm8";
+  case Type::IMM_16:
+    return "imm16";
+  case Type::IMM_32:
+    return "imm32";
+  case Type::IMM_64:
+    return "imm64";
+  case Type::ZERO:
+    return "zero";
+  case Type::ONE:
+    return "one";
+  case Type::THREE:
+    return "three";
+  case Type::LABEL:
+    return "label";
+  case Type::M_8:
+    return "m8";
+  case Type::M_16:
+    return "m16";
+  case Type::M_32:
+    return "m32";
+  case Type::M_64:
+    return "m64";
+  case Type::M_128:
+    return "m128";
+  case Type::M_256:
+    return "m256";
+  case Type::M_16_INT:
+    return "m16int";
+  case Type::M_32_INT:
+    return "m32int";
+  case Type::M_64_INT:
+    return "m64int";
+  case Type::M_32_FP:
+    return "m32fp";
+  case Type::M_64_FP:
+    return "m64fp";
+  case Type::M_80_FP:
+    return "m80fp";
+  case Type::M_80_BCD:
+    return "m80bcd";
+  case Type::M_2_BYTE:
+    return "m2byte";
+  case Type::M_28_BYTE:
+    return "m28byte";
+  case Type::M_108_BYTE:
+    return "m108byte";
+  case Type::M_512_BYTE:
+    return "m512byte";
+  case Type::FAR_PTR_16_16:
+    return "farptr1616";
+  case Type::FAR_PTR_16_32:
+    return "farptr1632";
+  case Type::FAR_PTR_16_64:
+    return "farptr1664";
+  case Type::MM:
+    return "mm";
+  case Type::PREF_66:
+    return "pref66";
+  case Type::PREF_REX_W:
+    return "prefrexw";
+  case Type::FAR:
+    return "far";
+  case Type::MOFFS_8:
+    return "moffs8";
+  case Type::MOFFS_16:
+    return "moffs16";
+  case Type::MOFFS_32:
+    return "moffs32";
+  case Type::MOFFS_64:
+    return "moffs64";
+  case Type::R_8:
+    return "r8";
+  case Type::RH:
+    return "rh";
+  case Type::AL:
+    return "al";
+  case Type::CL:
+    return "cl";
+  case Type::R_16:
+    return "r16";
+  case Type::AX:
+    return "ax";
+  case Type::DX:
+    return "dx";
+  case Type::R_32:
+    return "r32";
+  case Type::EAX:
+    return "eax";
+  case Type::R_64:
+    return "r64";
+  case Type::RAX:
+    return "rax";
+  case Type::REL_8:
+    return "rel8";
+  case Type::REL_32:
+    return "rel32";
+  case Type::SREG:
+    return "sreg";
+  case Type::FS:
+    return "fs";
+  case Type::GS:
+    return "gs";
+  case Type::ST:
+    return "st";
+  case Type::ST_0:
+    return "st0";
+  case Type::XMM:
+    return "xmm";
+  case Type::XMM_0:
+    return "xmm0";
+  case Type::YMM:
+    return "ymm";
+  }
+  assert(false);
+  return "";
 }
