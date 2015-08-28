@@ -16,20 +16,50 @@ using namespace cpputil;
 auto& options = Heading::create("Main arguments:");
 auto& mode = ValueArg<Mode, ModeReader, ModeWriter>::create("mode")
   .usage("(mnemonic_att|mnemonic_intel|operand_type|operand_width)")
-  .description("How should instructions be counted?")
-  .default_val(Mode::OPERAND_WIDTH);
+  .description("How should instructions be counted?");
 
 auto& show_instructions = FlagArg::create("show_instructions")
   .description("Should the instructions be shown (rather than just showing the count)?");
 
 uint16_t type_size(Type t);
 string type_name(Type t);
+map<string, set<Opcode>> compute_instructions(Mode mode);
+int count_instructions(Mode mode) {
+  return compute_instructions(mode).size();
+}
 
 /** Count the number of x86_x64 instructions in different ways. */
 int main(int argc, char** argv) {
 
   CommandLineConfig::strict_with_convenience(argc, argv);
 
+  if (mode.has_been_provided()) {
+    map<string, set<Opcode>> instructions = compute_instructions(mode);
+    if (show_instructions) {
+      vector<string> keys;
+      for(auto& i: instructions) {
+        keys.push_back(i.first);
+      }
+      sort(keys.begin(), keys.end());
+      for (auto& key : keys) {
+        cout << key << endl;
+      }
+    } else {
+      cout << instructions.size() << endl;
+    }
+  } else {
+    cout << "Mode          " << " | " << "Count" << endl;
+    cout << "--------------" << " + " << "-----" << endl;
+    cout << "mnemonic_att  " << " | " << count_instructions(Mode::MNEMONIC_ATT) << endl;
+    cout << "mnemonic_intel" << " | " << count_instructions(Mode::MNEMONIC_INTEL) << endl;
+    cout << "operand_type  " << " | " << count_instructions(Mode::OPERAND_TYPE) << endl;
+    cout << "operand_width " << " | " << count_instructions(Mode::OPERAND_WIDTH) << endl;
+  }
+
+  return 0;
+}
+
+map<string, set<Opcode>> compute_instructions(Mode mode) {
   map<string, set<Opcode>> instructions;
   for(size_t i = 1; i < X64ASM_NUM_OPCODES; ++i) {
     auto opcode = (Opcode)i;
@@ -60,21 +90,7 @@ int main(int argc, char** argv) {
     }
     (*instructions.find(key)).second.insert(opcode);
   }
-
-  if (show_instructions) {
-    vector<string> keys;
-    for(auto& i: instructions) {
-      keys.push_back(i.first);
-    }
-    sort(keys.begin(), keys.end());
-    for (auto& key : keys) {
-      cout << key << endl;
-    }
-  } else {
-    cout << instructions.size() << endl;
-  }
-
-  return 0;
+  return instructions;
 }
 
 uint16_t type_size(Type t) {
