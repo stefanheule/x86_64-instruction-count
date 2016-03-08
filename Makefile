@@ -39,7 +39,7 @@ endif
 
 ##### TARGETS
 
-all: release runall
+all: release run
 
 release:
 	$(MAKE) -C . -j$(NTHREADS) $(BIN) OPT="-O3 -DNDEBUG"
@@ -60,13 +60,10 @@ src/mode.o: src/mode.cc
 instr-count: src/instr-count.cc src/mode.o cpputil x64asm
 	$(GCC) $(OPT) $(INC) src/instr-count.cc -o instr-count $(LIB) src/mode.o
 
-runall:
-	./instr-count --mode "mnemonic_att"
-	./instr-count --mode "mnemonic_intel"
-	./instr-count --mode "operand_type"
-	./instr-count --mode "operand_width"
+run:
+	./instr-count
 
-.PHONY: release debug cpputil x64asm runall
+.PHONY: release debug cpputil x64asm run
 
 clean:
 	rm -f *.o
